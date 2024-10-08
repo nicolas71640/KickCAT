@@ -204,9 +204,17 @@ namespace kickcat::CoE
     void addEntry(Object &object, uint8_t subindex, uint16_t bitlen, uint16_t access,
               DataType type, std::string const& description, T data)
     {
-        object.entries.emplace_back(subindex,bitlen,access,type,description);
-        T* dataAlloc = new T(data);
-        object.entries.back().data = dataAlloc;
+        object.entries.emplace_back(subindex, bitlen, access, type, description);
+        if constexpr(std::is_same_v<const char*, T>)
+        {
+            object.entries.back().data = malloc(bitlen/8);
+            memcpy(object.entries.back().data, data, bitlen/8);
+        }
+        else
+        {
+            T* dataAlloc = new T(data);
+            object.entries.back().data = dataAlloc;
+        }
 
     }
     void populateOD();
